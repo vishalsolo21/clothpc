@@ -1,7 +1,7 @@
 <?php
 // --- Configuration ---
-const BOT_TOKEN     = 'bot_token';
-const ADMIN_CHAT_ID = '';
+const BOT_TOKEN     = '8037152164:AAHVke921BYoa8I_ssKyPeO76o6fGaRkW7k';
+const ADMIN_CHAT_ID = '6390351309';
 const WEBHOOK_URL   = '';
 const CHANNEL_IDS   = ['@'];
 
