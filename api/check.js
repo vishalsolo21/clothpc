@@ -19,14 +19,29 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await response.json();
-
-    // Logic based on response
-    if (data.message && data.message.includes("recover account")) {
-      return res.json({ status: "registered" });
-    } else {
-      return res.json({ status: "not_registered" });
+    let data = {};
+    try {
+      data = await response.json();
+    } catch {
+      data = {};
     }
+
+    let status = "registered"; // default
+
+    if (data.message) {
+      const msg = data.message.toLowerCase();
+
+      if (msg.includes("account does not exist")) {
+        status = "fresh";
+      } else {
+        status = "registered";
+      }
+    } else {
+      // blank response = registered
+      status = "registered";
+    }
+
+    return res.json({ status });
 
   } catch (error) {
     return res.status(500).json({ error: "Server error" });
