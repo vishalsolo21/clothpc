@@ -1,6 +1,5 @@
 export default async function handler(req, res) {
 
-  // CORS fix
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -29,6 +28,7 @@ export default async function handler(req, res) {
       }
     );
 
+    const statusCode = response.status;
     const text = await response.text();
 
     let data = {};
@@ -36,17 +36,41 @@ export default async function handler(req, res) {
       data = JSON.parse(text);
     } catch {}
 
-    let status = "registered";
+    let status = "registered"; // default
 
-    if (data.message) {
-      const msg = data.message.toLowerCase();
+    const msg = (data.message || "").toLowerCase();
 
-      if (msg.includes("account does not exist")) {
-        status = "fresh";
-      }
+    // ✅ Strong detection
+    if (
+      msg.includes("does not exist") ||
+      msg.includes("not found") ||
+      statusCode === 404
+    ) {
+      status = "fresh";
     }
 
-    return res.json({ status });
+    // 🔴 Known registered messages
+    else if (
+      msg.includes("recover account") ||
+      msg.includes("does not have email") ||
+      msg.includes("otp") ||
+      statusCode === 200
+    ) {
+      status = "registered";
+    }
+
+    // ⚠️ Fallback: unknown → treat as registered
+    else {
+      status = "registered";
+    }
+
+    return res.json({
+      status,
+      debug: {
+        statusCode,
+        message: data.message || null
+      }
+    });
 
   } catch (error) {
     return res.status(500).json({ error: "Server error" });
