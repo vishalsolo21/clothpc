@@ -1,9 +1,20 @@
 export default async function handler(req, res) {
+
+  // ✅ Allow requests
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   const { phone } = req.body;
+  console.log("Checking:", phone);
 
   try {
     const response = await fetch(
@@ -19,31 +30,28 @@ export default async function handler(req, res) {
       }
     );
 
+    const text = await response.text();
+    console.log("Raw Response:", text);
+
     let data = {};
     try {
-      data = await response.json();
-    } catch {
-      data = {};
-    }
+      data = JSON.parse(text);
+    } catch {}
 
-    let status = "registered"; // default
+    let status = "registered";
 
     if (data.message) {
       const msg = data.message.toLowerCase();
 
       if (msg.includes("account does not exist")) {
         status = "fresh";
-      } else {
-        status = "registered";
       }
-    } else {
-      // blank response = registered
-      status = "registered";
     }
 
     return res.json({ status });
 
   } catch (error) {
+    console.error("API ERROR:", error);
     return res.status(500).json({ error: "Server error" });
   }
 }
