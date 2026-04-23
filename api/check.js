@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
 
-  // ✅ Allow requests
+  // CORS fix
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -14,7 +14,6 @@ export default async function handler(req, res) {
   }
 
   const { phone } = req.body;
-  console.log("Checking:", phone);
 
   try {
     const response = await fetch(
@@ -31,7 +30,6 @@ export default async function handler(req, res) {
     );
 
     const text = await response.text();
-    console.log("Raw Response:", text);
 
     let data = {};
     try {
@@ -51,7 +49,6 @@ export default async function handler(req, res) {
     return res.json({ status });
 
   } catch (error) {
-    console.error("API ERROR:", error);
     return res.status(500).json({ error: "Server error" });
   }
 }
