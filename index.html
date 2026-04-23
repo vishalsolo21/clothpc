@@ -1,40 +1,167 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Myntra Number Checker</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: #111;
-      color: #fff;
-      text-align: center;
-      padding: 50px;
-    }
-    input, button {
-      padding: 12px;
-      margin: 10px;
-      border-radius: 8px;
-      border: none;
-    }
-    button {
-      background: #ff3f6c;
-      color: white;
-      cursor: pointer;
-    }
-    #result {
-      margin-top: 20px;
-      font-size: 18px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number Checker</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #111, #1c1c1c);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  width: 95%;
+  max-width: 420px;
+  background: #1f1f1f;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+h1 {
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #ff3f6c;
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+}
+
+input {
+  flex: 1;
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+button {
+  padding: 14px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #ff3f6c;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+.result {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 18px;
+  padding: 15px;
+  border-radius: 10px;
+  display: none;
+}
+
+.loading {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.footer span {
+  color: #00ff9d;
+}
+</style>
 </head>
+
 <body>
 
-<h2>Myntra Number Checker</h2>
+<div class="container">
+  <h1>Number Checker</h1>
 
-<input type="text" id="phone" placeholder="Enter mobile number" />
-<br>
-<button onclick="checkNumber()">Check</button>
+  <div class="input-group">
+    <input type="number" id="phone" placeholder="Enter mobile number">
+    <button onclick="checkNumber()">Check</button>
+  </div>
 
+  <div class="loading" id="loading"></div>
+  <div class="result" id="result"></div>
+
+  <div class="footer">
+    Made with ❤️ by Vishal | <span>RAIGANJLOOTERS</span>
+  </div>
+</div>
+
+<script>
+async function checkNumber() {
+  const phone = document.getElementById("phone").value.trim();
+  const resultBox = document.getElementById("result");
+  const loading = document.getElementById("loading");
+
+  if (phone.length < 10) {
+    alert("Enter valid number");
+    return;
+  }
+
+  resultBox.style.display = "none";
+  loading.innerText = "Checking...";
+
+  try {
+    const res = await fetch("/api/check", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ phone })
+    });
+
+    const data = await res.json();
+
+    loading.innerText = "";
+    resultBox.style.display = "block";
+
+    if (data.status === "fresh") {
+      resultBox.innerHTML = "🟢 Fresh Number";
+      resultBox.style.background = "#062e1f";
+      resultBox.style.color = "#00ff9d";
+    } else {
+      resultBox.innerHTML = "🔴 Registered";
+      resultBox.style.background = "#2a0b0b";
+      resultBox.style.color = "#ff4d4d";
+    }
+
+  } catch (err) {
+    loading.innerText = "";
+    resultBox.style.display = "block";
+    resultBox.innerHTML = "Error checking number";
+    resultBox.style.background = "#2a0b0b";
+    resultBox.style.color = "#ff4d4d";
+  }
+}
+</script>
+
+</body>
+</html>
 <div id="result"></div>
 
 <script>
