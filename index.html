@@ -3,47 +3,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Number Checker</title>
+<title>Swiggy Number Checker</title>
 
 <style>
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
 body {
   margin: 0;
-  font-family: Arial;
-  background: linear-gradient(135deg, #0f0f0f, #1c1c1c);
+  background: linear-gradient(135deg, #111, #1c1c1c);
   color: white;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 .container {
-  width: 90%;
-  max-width: 400px;
+  width: 92%;
+  max-width: 420px;
   background: #1f1f1f;
   padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   text-align: center;
 }
 
-h2 {
-  color: #ff3f6c;
+h1 {
   margin-bottom: 20px;
+  color: #ff3f6c;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
 }
 
 input {
-  width: 65%;
-  padding: 12px;
-  border-radius: 8px;
+  flex: 1;
+  padding: 14px;
   border: none;
+  border-radius: 10px;
   font-size: 16px;
+  outline: none;
 }
 
 button {
-  padding: 12px 16px;
+  padding: 14px 18px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #ff3f6c;
   color: white;
   font-weight: bold;
@@ -56,14 +66,15 @@ button {
 }
 
 #result {
-  margin-top: 15px;
-  padding: 12px;
-  border-radius: 8px;
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 10px;
   display: none;
+  font-size: 18px;
 }
 
 .footer {
-  margin-top: 15px;
+  margin-top: 20px;
   font-size: 13px;
 }
 
@@ -72,14 +83,15 @@ button {
 }
 </style>
 </head>
-
 <body>
 
 <div class="container">
-  <h2>Number Checker</h2>
+  <h1>Number Checker</h1>
 
-  <input type="number" id="phone" placeholder="Enter number">
-  <button onclick="checkNumber()">Check</button>
+  <div class="input-row">
+    <input type="number" id="phone" placeholder="Enter mobile number">
+    <button onclick="checkNumber()">Check</button>
+  </div>
 
   <div id="loading"></div>
   <div id="result"></div>
@@ -92,11 +104,11 @@ button {
 <script>
 async function checkNumber() {
   const phone = document.getElementById("phone").value.trim();
-  const result = document.getElementById("result");
   const loading = document.getElementById("loading");
+  const result = document.getElementById("result");
 
   if (phone.length < 10) {
-    alert("Enter valid number");
+    alert("Enter valid mobile number");
     return;
   }
 
@@ -117,21 +129,22 @@ async function checkNumber() {
     loading.innerText = "";
     result.style.display = "block";
 
-    if (data.status === "fresh") {
+    if (data.registered === true) {
+      result.innerHTML = "🔴 Registered Number";
+      result.style.background = "#2a0b0b";
+      result.style.color = "#ff4d4d";
+    } else {
       result.innerHTML = "🟢 Fresh Number";
       result.style.background = "#062e1f";
       result.style.color = "#00ff9d";
-    } else {
-      result.innerHTML = "🔴 Registered";
-      result.style.background = "#2a0b0b";
-      result.style.color = "#ff4d4d";
     }
 
   } catch (err) {
     loading.innerText = "";
     result.style.display = "block";
-    result.innerHTML = "❌ Error";
-    result.style.color = "red";
+    result.innerHTML = "❌ API Error";
+    result.style.background = "#2a0b0b";
+    result.style.color = "#ff4d4d";
   }
 }
 </script>
