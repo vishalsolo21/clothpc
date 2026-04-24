@@ -1,5 +1,3 @@
-import crypto from "crypto";
-
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -17,6 +15,12 @@ export default async function handler(req, res) {
 
   const { phone } = req.body;
 
+  if (!phone) {
+    return res.status(400).json({
+      error: "Phone number required"
+    });
+  }
+
   try {
     const timestamp = Math.floor(Date.now() / 1000);
 
@@ -26,29 +30,53 @@ export default async function handler(req, res) {
       timestamp
     };
 
-    // Replace this with your real secret/signing logic if needed
-    const signature = "36d4a89f0eca5ce0cb88efd7c68fff2eb5067e8fbc6d24e4c40f7ed5bd409a8a";
+    // Replace if API requires regenerated signature
+    const signature =
+      "36d4a89f0eca5ce0cb88efd7c68fff2eb5067e8fbc6d24e4c40f7ed5bd409a8a";
 
-    const response = await fetch("https://storelex.store/?api=1", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-App-Signature": signature
-      },
-      body: JSON.stringify(payload)
-    });
+    const response = await fetch(
+      "https://storelex.store/?api=1",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-App-Signature": signature
+        },
+        body: JSON.stringify(payload)
+      }
+    );
 
-    const data = await response.json();
+    const text = await response.text();
 
-    const result = data.results?.[phone];
+    let parsed = {};
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = {
+        raw: text
+      };
+    }
+
+    const result = parsed?.results?.[phone];
+
+    if (!result) {
+      return res.json({
+        registered: null,
+        debugMessage: "No result returned from API",
+        rawResponse: parsed
+      });
+    }
 
     return res.json({
-      registered: result?.registered ?? false
+      registered: result.registered,
+      debugMessage: `Service: ${result.service || "Unknown"}`,
+      rawResponse: parsed
     });
 
   } catch (error) {
     return res.status(500).json({
-      error: "Server error"
+      error: "Server error",
+      debugMessage: error.message
     });
   }
 }
