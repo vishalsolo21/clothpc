@@ -1,5 +1,6 @@
-export default async function handler(req, res) {
+import crypto from "crypto";
 
+export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -9,70 +10,45 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed"
+    });
   }
 
   const { phone } = req.body;
 
   try {
-    const response = await fetch(
-      "https://www.myntra.com/gateway/auth/v1/forgetpassword",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-myntraweb": "Yes",
-          "X-Requested-With": "browser"
-        },
-        body: JSON.stringify({ phoneNumber: phone })
-      }
-    );
+    const timestamp = Math.floor(Date.now() / 1000);
 
-    const statusCode = response.status;
-    const text = await response.text();
+    const payload = {
+      type: "swiggy",
+      numbers: [phone],
+      timestamp
+    };
 
-    let data = {};
-    try {
-      data = JSON.parse(text);
-    } catch {}
+    // Replace this with your real secret/signing logic if needed
+    const signature = "36d4a89f0eca5ce0cb88efd7c68fff2eb5067e8fbc6d24e4c40f7ed5bd409a8a";
 
-    let status = "registered"; // default
+    const response = await fetch("https://storelex.store/?api=1", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-App-Signature": signature
+      },
+      body: JSON.stringify(payload)
+    });
 
-    const msg = (data.message || "").toLowerCase();
+    const data = await response.json();
 
-    // ✅ Strong detection
-    if (
-      msg.includes("does not exist") ||
-      msg.includes("not found") ||
-      statusCode === 404
-    ) {
-      status = "fresh";
-    }
-
-    // 🔴 Known registered messages
-    else if (
-      msg.includes("recover account") ||
-      msg.includes("does not have email") ||
-      msg.includes("otp") ||
-      statusCode === 200
-    ) {
-      status = "registered";
-    }
-
-    // ⚠️ Fallback: unknown → treat as registered
-    else {
-      status = "registered";
-    }
+    const result = data.results?.[phone];
 
     return res.json({
-      status,
-      debug: {
-        statusCode,
-        message: data.message || null
-      }
+      registered: result?.registered ?? false
     });
 
   } catch (error) {
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({
+      error: "Server error"
+    });
   }
 }
